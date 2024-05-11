@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import geo from '@/assets/geojson/country/medres/country.0.01.json';
+import geo from '@/assets/data/country/medres/country.0.01.json';
 import { Button } from '@/components/ui/button';
 import {
   ResizableHandle,
