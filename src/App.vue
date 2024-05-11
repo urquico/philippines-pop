@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
+import Map from './components/Map.vue';
 </script>
 
 <template>
-  <Button>Test</Button>
+  <!-- <Map /> -->
+  <div class="w-screen h-screen">
+    <Map />
+  </div>
 </template>
