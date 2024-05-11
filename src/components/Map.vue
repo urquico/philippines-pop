@@ -68,18 +68,34 @@ const handleChangeIsland = (newIsland: string) => {
   island.value = newIsland;
   switch (newIsland) {
     case 'Luzon':
+      mapC.fitBounds([
+        [18.62616558722052, 119.82368607106855],
+        [13.62954884019396, 122.34585973508759],
+      ]);
       region.value = '';
 
       break;
+
     case 'Visayas':
+      mapC.fitBounds([
+        [12.709412795523074, 124.86453126248233],
+        [9.047046879345226, 122.97010358234623],
+      ]);
       region.value = '';
 
       break;
+
     case 'Mindanao':
+      mapC.fitBounds([
+        [9.803475205756953, 125.79443176690069],
+        [5.408040921433846, 122.0121087531571],
+      ]);
       region.value = '';
 
       break;
+
     default:
+      mapC.setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom.value);
       region.value = '';
 
       break;
