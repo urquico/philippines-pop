@@ -23,6 +23,9 @@ importers:
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
+      leaflet-providers:
+        specifier: ^2.0.0
+        version: 2.0.0
       lucide-vue-next:
         specifier: ^0.378.0
         version: 0.378.0(vue@3.4.27(typescript@5.4.5))
@@ -832,6 +835,9 @@ packages:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
     engines: {node: '>=4'}
     hasBin: true
+
+  leaflet-providers@2.0.0:
+    resolution: {integrity: sha512-CWwKEnHd66Qsx0m4o5q5ZOa60s00B91pMxnlr4Y22msubfs7dhbZhdMIz8bvZQkrZqi67ppI1fsZRS6vtrLcOA==}
 
   leaflet@1.9.4:
     resolution: {integrity: sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==}
@@ -1953,6 +1959,8 @@ snapshots:
   js-tokens@4.0.0: {}
 
   jsesc@2.5.2: {}
+
+  leaflet-providers@2.0.0: {}
 
   leaflet@1.9.4: {}
 

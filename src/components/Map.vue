@@ -24,14 +24,7 @@
       </ResizablePanel>
       <ResizableHandle id="handle-demo-handle-1" with-handle />
       <ResizablePanel id="handle-demo-panel-2" :default-size="70">
-        <div class="h-full w-full p-6">
-          <h1 class="text-4xl font-bold mb-4">Dashboard</h1>
-          <Separator />
-          <h1 class="text-3xl font-medium my-4 text-zinc-600">
-            {{ mapStore.island }}
-            <span v-if="mapStore.region"> > {{ mapStore.region }}</span>
-          </h1>
-        </div>
+        <Dashboard />
       </ResizablePanel>
     </ResizablePanelGroup>
   </div>
@@ -45,7 +38,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { Separator } from '@/components/ui/separator';
 import {
   LUZON,
   MINDANAO,
@@ -58,6 +50,8 @@ import { Coordinates } from '@/lib/types';
 import { useMapStore } from '@/store/map.store';
 import { type Map, geoJSON, map, tileLayer } from 'leaflet';
 import { onMounted, watch } from 'vue';
+
+import Dashboard from './Dashboard.vue';
 
 const mapStore = useMapStore();
 let mapC: Map;
@@ -97,7 +91,10 @@ function generateMap() {
 
   mapC = map('map').setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom);
 
-  tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const MAP_SKIN =
+    'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}';
+
+  tileLayer(MAP_SKIN, {
     minZoom: defaultZoom,
     attribution:
       '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -107,14 +104,12 @@ function generateMap() {
     .eachLayer((layer) => {
       const regionName = (layer as any).feature.properties.adm1_en;
 
-      layer.on('mouseover', () => {
-        layer.bindPopup(regionName).openPopup();
-      });
-
       layer.on('click', () => {
         mapC.fitBounds((layer as any).getBounds());
         mapStore.region = regionName;
       });
+
+      layer.bindPopup(regionName).openPopup();
     })
     .addTo(mapC);
 }
