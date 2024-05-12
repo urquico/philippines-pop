@@ -14,39 +14,44 @@ export const useMapStore = defineStore('map', {
     ({
       island: 'Philippines',
       region: '',
+      regionPsgc: '',
+      province: '',
+      provincePsgc: '',
     }) as MapStoreType,
 
   actions: {
     handleChangeIsland: function (
-      this: { island: string; region: string },
+      this: {
+        island: string;
+        region: string;
+        regionPsgc: string;
+        province: string;
+        provincePsgc: string;
+      },
       newIsland: string,
       map: Map,
     ) {
       this.island = newIsland;
+      this.region = '';
+      this.regionPsgc = '';
+      this.province = '';
+      this.provincePsgc = '';
 
       switch (newIsland) {
         case 'Luzon':
           map.fitBounds(LUZON as Coordinates);
-          this.region = '';
-
           break;
 
         case 'Visayas':
           map.fitBounds(VISAYAS as Coordinates);
-          this.region = '';
-
           break;
 
         case 'Mindanao':
           map.fitBounds(MINDANAO as Coordinates);
-          this.region = '';
-
           break;
 
         default:
           map.setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom);
-          this.region = '';
-
           break;
       }
     },

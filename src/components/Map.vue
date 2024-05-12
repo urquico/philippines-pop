@@ -51,6 +51,8 @@ import {
   VISAYAS,
   defaultZoom,
   geoStyle,
+  provinceStyle,
+  regionStyle,
 } from '@/lib/constants';
 import { Coordinates } from '@/lib/types';
 import { useMapStore } from '@/store/map.store';
@@ -74,12 +76,59 @@ onMounted(() => {
   generateMap();
 });
 
-watch([() => mapStore.island, showRegionNames], () => {
-  generateMap();
-  if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
-  if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
-  if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
-});
+watch(
+  [
+    () => mapStore.island,
+    () => mapStore.regionPsgc,
+    () => mapStore.provincePsgc,
+    showRegionNames,
+  ],
+  async () => {
+    generateMap();
+
+    if (mapStore.regionPsgc) {
+      // open a file with the region's data `provdists-region-${mapStore.regionPsgc}.0.01`
+      await import(
+        `@/assets/data/regions/medres/provdists-region-${mapStore.regionPsgc}.0.01.json`
+      ).then((data) => {
+        mapC.fitBounds(
+          geoJSON(geo as any, {
+            filter: (feature: any) =>
+              feature.properties.adm1_psgc === mapStore.regionPsgc,
+          }).getBounds(),
+        );
+
+        const region: GeoJSON.FeatureCollection<any> = {
+          type: 'FeatureCollection',
+          features: data.features,
+        };
+
+        geoJSON(region, { style: regionStyle })
+          .eachLayer((layer) => {
+            const provName = (layer as any).feature.properties.adm2_en;
+            const provPsgc = (layer as any).feature.properties.adm2_psgc;
+
+            layer.on('click', () => {
+              mapStore.province = provName;
+              mapStore.provincePsgc = provPsgc;
+            });
+
+            layer.bindTooltip(provName, {
+              permanent: showRegionNames.value,
+              direction: showRegionNames.value ? 'center' : 'top',
+              className: 'text-xs',
+              sticky: !showRegionNames.value,
+            });
+          })
+          .addTo(mapC);
+      });
+    }
+
+    if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
+    if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
+    if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
+  },
+);
 
 function generateMap() {
   if (mapC) mapC.remove();
@@ -106,10 +155,12 @@ function generateMap() {
   geoJSON(country, { style: geoStyle })
     .eachLayer((layer) => {
       const regionName = (layer as any).feature.properties.adm1_en;
+      const regionPsgc = (layer as any).feature.properties.adm1_psgc;
 
       layer.on('click', () => {
-        mapC.fitBounds((layer as any).getBounds());
         mapStore.region = regionName;
+        mapStore.regionPsgc = regionPsgc;
+        mapStore.provincePsgc = '';
       });
 
       layer.bindTooltip(regionName, {
