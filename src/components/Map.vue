@@ -155,12 +155,14 @@ function generateMap() {
     .eachLayer((layer) => {
       const regionName = (layer as any).feature.properties.adm1_en;
 
+      layer.on('mouseover', () => {
+        layer.bindPopup(regionName).openPopup();
+      });
+
       layer.on('click', () => {
         mapC.fitBounds((layer as any).getBounds());
         region.value = regionName;
       });
-
-      layer.bindPopup(regionName);
     })
     .addTo(mapC);
 }
