@@ -10,28 +10,25 @@
         :default-size="30"
         class="relative"
       >
-        <div
-          class="absolute z-50 bottom-0 left-0 mb-4 ml-4 flex flex-col gap-2"
-        >
-          <Button @click="handleChangeIsland('Philippines')" variant="secondary"
+        <div class="absolute z-50 bottom-0 left-0 m-4 flex flex-col gap-2">
+          <Button @click="changeIsland('Philippines')" variant="secondary"
             >Philippines</Button
           >
-          <Button @click="handleChangeIsland('Luzon')">Luzon</Button>
-          <Button @click="handleChangeIsland('Visayas')">Visayas</Button>
-          <Button @click="handleChangeIsland('Mindanao')">Mindanao</Button>
+          <Button @click="changeIsland('Luzon')">Luzon</Button>
+          <Button @click="changeIsland('Visayas')">Visayas</Button>
+          <Button @click="changeIsland('Mindanao')">Mindanao</Button>
+        </div>
+
+        <div class="absolute z-50 top-0 right-0 m-4 flex flex-col gap-2">
+          <Button @click="showRegionNames = !showRegionNames">
+            <Eye class="w-4 h-4 mr-2" />Show Region Names</Button
+          >
         </div>
         <div id="map" class="h-full w-full z-0"></div>
       </ResizablePanel>
       <ResizableHandle id="handle-demo-handle-1" with-handle />
       <ResizablePanel id="handle-demo-panel-2" :default-size="70">
-        <div class="h-full w-full p-6">
-          <h1 class="text-4xl font-bold mb-4">Dashboard</h1>
-          <Separator />
-          <h1 class="text-3xl font-medium my-4 text-zinc-600">
-            {{ island }}
-            <span v-if="region"> > {{ region }}</span>
-          </h1>
-        </div>
+        <Dashboard />
       </ResizablePanel>
     </ResizablePanelGroup>
   </div>
@@ -45,97 +42,53 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { Separator } from '@/components/ui/separator';
+import {
+  ATTR,
+  LUZON,
+  MAP_SKIN,
+  MINDANAO,
+  PH_COORDS,
+  VISAYAS,
+  defaultZoom,
+  geoStyle,
+} from '@/lib/constants';
+import { Coordinates } from '@/lib/types';
+import { useMapStore } from '@/store/map.store';
 import { type Map, geoJSON, map, tileLayer } from 'leaflet';
+import { Eye } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 
-const island = ref('Philippines');
-const region = ref('');
-const defaultZoom = ref(6);
+import Dashboard from './Dashboard.vue';
 
+const mapStore = useMapStore();
 let mapC: Map;
 
-// 12.8797° N, 121.7740° E - Philippines
-const PH_COORDS: number[] = [12.8797, 121.774];
+// States
+const showRegionNames = ref<boolean>(false);
 
-const geoStyle = {
-  color: 'green',
-  weight: 2,
-  opacity: 0.65,
-};
-
-const handleChangeIsland = (newIsland: string) => {
-  island.value = newIsland;
-  switch (newIsland) {
-    case 'Luzon':
-      mapC.fitBounds([
-        [18.62616558722052, 119.82368607106855],
-        [13.62954884019396, 122.34585973508759],
-      ]);
-      region.value = '';
-
-      break;
-
-    case 'Visayas':
-      mapC.fitBounds([
-        [12.709412795523074, 124.86453126248233],
-        [9.047046879345226, 122.97010358234623],
-      ]);
-      region.value = '';
-
-      break;
-
-    case 'Mindanao':
-      mapC.fitBounds([
-        [9.803475205756953, 125.79443176690069],
-        [5.408040921433846, 122.0121087531571],
-      ]);
-      region.value = '';
-
-      break;
-
-    default:
-      mapC.setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom.value);
-      region.value = '';
-
-      break;
-  }
-};
+function changeIsland(newIsland: string) {
+  mapStore.handleChangeIsland(newIsland, mapC);
+}
 
 onMounted(() => {
   generateMap();
 });
 
-watch(island, () => {
+watch([() => mapStore.island, showRegionNames], () => {
   generateMap();
-
-  if (island.value === 'Luzon')
-    mapC.fitBounds([
-      [18.62616558722052, 119.82368607106855],
-      [13.62954884019396, 122.34585973508759],
-    ]);
-
-  if (island.value === 'Visayas')
-    mapC.fitBounds([
-      [12.709412795523074, 124.86453126248233],
-      [9.047046879345226, 122.97010358234623],
-    ]);
-
-  if (island.value === 'Mindanao')
-    mapC.fitBounds([
-      [9.803475205756953, 125.79443176690069],
-      [5.408040921433846, 122.0121087531571],
-    ]);
+  if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
+  if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
+  if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
 });
 
 function generateMap() {
   if (mapC) mapC.remove();
 
   const newGeo =
-    island.value === 'Philippines'
+    mapStore.island === 'Philippines'
       ? (geo as any).features
       : (geo as any).features.filter(
-          (feature: any) => feature.properties.island === island.value,
+          (feature: any) => feature.properties.island === mapStore.island,
         );
 
   const country: GeoJSON.FeatureCollection<any> = {
@@ -143,12 +96,11 @@ function generateMap() {
     features: newGeo,
   };
 
-  mapC = map('map').setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom.value);
+  mapC = map('map').setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom);
 
-  tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    minZoom: defaultZoom.value,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  tileLayer(MAP_SKIN, {
+    minZoom: defaultZoom,
+    attribution: ATTR,
   }).addTo(mapC);
 
   geoJSON(country, { style: geoStyle })
@@ -157,10 +109,15 @@ function generateMap() {
 
       layer.on('click', () => {
         mapC.fitBounds((layer as any).getBounds());
-        region.value = regionName;
+        mapStore.region = regionName;
       });
 
-      layer.bindPopup(regionName);
+      layer.bindTooltip(regionName, {
+        permanent: showRegionNames.value,
+        direction: showRegionNames.value ? 'center' : 'top',
+        className: 'text-xs',
+        sticky: !showRegionNames.value,
+      });
     })
     .addTo(mapC);
 }
