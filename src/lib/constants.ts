@@ -11,6 +11,9 @@ export const geoStyle = {
 
 export const defaultZoom: number = 6;
 
+export const MAP_SKIN =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}';
+
 // island coordinates:
 export const LUZON: Coordinates = [
   [18.62616558722052, 119.82368607106855],

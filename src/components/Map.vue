@@ -10,15 +10,19 @@
         :default-size="30"
         class="relative"
       >
-        <div
-          class="absolute z-50 bottom-0 left-0 mb-4 ml-4 flex flex-col gap-2"
-        >
+        <div class="absolute z-50 bottom-0 left-0 m-4 flex flex-col gap-2">
           <Button @click="changeIsland('Philippines')" variant="secondary"
             >Philippines</Button
           >
           <Button @click="changeIsland('Luzon')">Luzon</Button>
           <Button @click="changeIsland('Visayas')">Visayas</Button>
           <Button @click="changeIsland('Mindanao')">Mindanao</Button>
+        </div>
+
+        <div class="absolute z-50 top-0 right-0 m-4 flex flex-col gap-2">
+          <Button @click="showRegionNames = !showRegionNames">
+            <Eye class="w-4 h-4 mr-2" />Show Region Names</Button
+          >
         </div>
         <div id="map" class="h-full w-full z-0"></div>
       </ResizablePanel>
@@ -40,6 +44,7 @@ import {
 } from '@/components/ui/resizable';
 import {
   LUZON,
+  MAP_SKIN,
   MINDANAO,
   PH_COORDS,
   VISAYAS,
@@ -49,12 +54,16 @@ import {
 import { Coordinates } from '@/lib/types';
 import { useMapStore } from '@/store/map.store';
 import { type Map, geoJSON, map, tileLayer } from 'leaflet';
-import { onMounted, watch } from 'vue';
+import { Eye } from 'lucide-vue-next';
+import { onMounted, ref, watch } from 'vue';
 
 import Dashboard from './Dashboard.vue';
 
 const mapStore = useMapStore();
 let mapC: Map;
+
+// States
+const showRegionNames = ref<boolean>(false);
 
 function changeIsland(newIsland: string) {
   mapStore.handleChangeIsland(newIsland, mapC);
@@ -64,15 +73,12 @@ onMounted(() => {
   generateMap();
 });
 
-watch(
-  () => mapStore.island,
-  () => {
-    generateMap();
-    if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
-    if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
-    if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
-  },
-);
+watch([() => mapStore.island, showRegionNames], () => {
+  generateMap();
+  if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
+  if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
+  if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
+});
 
 function generateMap() {
   if (mapC) mapC.remove();
@@ -91,9 +97,6 @@ function generateMap() {
 
   mapC = map('map').setView([PH_COORDS[0], PH_COORDS[1]], defaultZoom);
 
-  const MAP_SKIN =
-    'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}';
-
   tileLayer(MAP_SKIN, {
     minZoom: defaultZoom,
     attribution:
@@ -109,7 +112,12 @@ function generateMap() {
         mapStore.region = regionName;
       });
 
-      layer.bindPopup(regionName).openPopup();
+      layer.bindTooltip(regionName, {
+        permanent: showRegionNames.value,
+        direction: 'top',
+        className: 'text-xs',
+        sticky: true,
+      });
     })
     .addTo(mapC);
 }
