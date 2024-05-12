@@ -43,6 +43,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import {
+  ATTR,
   LUZON,
   MAP_SKIN,
   MINDANAO,
@@ -99,8 +100,7 @@ function generateMap() {
 
   tileLayer(MAP_SKIN, {
     minZoom: defaultZoom,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution: ATTR,
   }).addTo(mapC);
 
   geoJSON(country, { style: geoStyle })
@@ -114,9 +114,9 @@ function generateMap() {
 
       layer.bindTooltip(regionName, {
         permanent: showRegionNames.value,
-        direction: 'top',
+        direction: showRegionNames.value ? 'center' : 'top',
         className: 'text-xs',
-        sticky: true,
+        sticky: !showRegionNames.value,
       });
     })
     .addTo(mapC);
