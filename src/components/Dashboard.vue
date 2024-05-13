@@ -13,6 +13,8 @@ const mapStore = useMapStore();
       {{ mapStore.island }}
       <span v-if="mapStore.region"> > {{ mapStore.region }}</span>
       <span v-if="mapStore.province"> > {{ mapStore.province }}</span>
+      <span v-if="mapStore.province"> > {{ mapStore.cityMun }}</span>
+      <span v-if="mapStore.province"> > {{ mapStore.bgy }}</span>
     </h1>
   </div>
 </template>

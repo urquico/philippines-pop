@@ -17,6 +17,9 @@ export const useMapStore = defineStore('map', {
       regionPsgc: '',
       province: '',
       provincePsgc: '',
+      cityMun: '',
+      cityMunPsgc: '',
+      bgy: '',
     }) as MapStoreType,
 
   actions: {
@@ -27,6 +30,9 @@ export const useMapStore = defineStore('map', {
         regionPsgc: string;
         province: string;
         provincePsgc: string;
+        cityMun: string;
+        cityMunPsgc: string;
+        bgy: string;
       },
       newIsland: string,
       map: Map,
@@ -36,6 +42,9 @@ export const useMapStore = defineStore('map', {
       this.regionPsgc = '';
       this.province = '';
       this.provincePsgc = '';
+      this.cityMun = '';
+      this.cityMunPsgc = '';
+      this.bgy = '';
 
       switch (newIsland) {
         case 'Luzon':
