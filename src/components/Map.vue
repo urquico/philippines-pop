@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import geo from '@/assets/data/country/medres/country.0.01.json';
+import geo from '@/assets/data/country/hires/country.0.1.json';
 import { Button } from '@/components/ui/button';
 import {
   ResizableHandle,
@@ -86,34 +86,48 @@ watch(
   async () => {
     generateMap();
 
-    if (mapStore.regionPsgc) {
-      // open a file with the region's data `provdists-region-${mapStore.regionPsgc}.0.01`
+    if (mapStore.regionPsgc && mapStore.provincePsgc) {
+      if (mapC) mapC.remove();
+
       await import(
-        `@/assets/data/regions/medres/provdists-region-${mapStore.regionPsgc}.0.01.json`
+        `@/assets/data/provdists/hires/municities-provdist-${mapStore.provincePsgc}.0.1.json`
       ).then((data) => {
+        console.log(data);
+        console.log(mapStore.provincePsgc);
+
+        mapC = map('map');
+
+        tileLayer(MAP_SKIN, {
+          minZoom: defaultZoom,
+          attribution: ATTR,
+        }).addTo(mapC);
+
         mapC.fitBounds(
-          geoJSON(geo as any, {
+          geoJSON(data as any, {
             filter: (feature: any) =>
-              feature.properties.adm1_psgc === mapStore.regionPsgc,
+              feature.properties.adm2_psgc === mapStore.provincePsgc,
           }).getBounds(),
         );
 
-        const region: GeoJSON.FeatureCollection<any> = {
+        const province: GeoJSON.FeatureCollection<any> = {
           type: 'FeatureCollection',
           features: data.features,
         };
 
-        geoJSON(region, { style: regionStyle })
+        geoJSON(province, { style: provinceStyle })
           .eachLayer((layer) => {
-            const provName = (layer as any).feature.properties.adm2_en;
-            const provPsgc = (layer as any).feature.properties.adm2_psgc;
+            const cityMunName = (layer as any).feature.properties.adm3_en;
+            const cityMunPsgc = (layer as any).feature.properties.adm3_psgc;
 
             layer.on('click', () => {
-              mapStore.province = provName;
-              mapStore.provincePsgc = provPsgc;
+              // mapStore.cityMun = cityMunName;
+              // mapStore.cityMunPsgc = cityMunPsgc;
+
+              // console.log(cityMunName, cityMunPsgc);
+              console.log('Hello');
             });
 
-            layer.bindTooltip(provName, {
+            layer.bindTooltip(cityMunName, {
               permanent: showRegionNames.value,
               direction: showRegionNames.value ? 'center' : 'top',
               className: 'text-xs',
@@ -124,11 +138,62 @@ watch(
       });
     }
 
+    if (mapStore.regionPsgc && mapStore.provincePsgc === '') {
+      await generateRegion();
+    }
+
     if (mapStore.island === 'Luzon') mapC.fitBounds(LUZON as Coordinates);
     if (mapStore.island === 'Visayas') mapC.fitBounds(VISAYAS as Coordinates);
     if (mapStore.island === 'Mindanao') mapC.fitBounds(MINDANAO as Coordinates);
   },
 );
+
+async function generateRegion() {
+  if (mapC) mapC.remove();
+
+  // open a file with the region's data `provdists-region-${mapStore.regionPsgc}.0.01`
+  await import(
+    `@/assets/data/regions/hires/provdists-region-${mapStore.regionPsgc}.0.1.json`
+  ).then((data) => {
+    mapC = map('map');
+
+    tileLayer(MAP_SKIN, {
+      minZoom: defaultZoom,
+      attribution: ATTR,
+    }).addTo(mapC);
+
+    mapC.fitBounds(
+      geoJSON(data as any, {
+        filter: (feature: any) =>
+          feature.properties.adm1_psgc === mapStore.regionPsgc,
+      }).getBounds(),
+    );
+
+    const region: GeoJSON.FeatureCollection<any> = {
+      type: 'FeatureCollection',
+      features: data.features,
+    };
+
+    geoJSON(region, { style: regionStyle })
+      .eachLayer((layer) => {
+        const provName = (layer as any).feature.properties.adm2_en;
+        const provPsgc = (layer as any).feature.properties.adm2_psgc;
+
+        layer.on('click', () => {
+          mapStore.province = provName;
+          mapStore.provincePsgc = provPsgc;
+        });
+
+        layer.bindTooltip(provName, {
+          permanent: showRegionNames.value,
+          direction: showRegionNames.value ? 'center' : 'top',
+          className: 'text-xs',
+          sticky: !showRegionNames.value,
+        });
+      })
+      .addTo(mapC);
+  });
+}
 
 function generateMap() {
   if (mapC) mapC.remove();
@@ -160,7 +225,6 @@ function generateMap() {
       layer.on('click', () => {
         mapStore.region = regionName;
         mapStore.regionPsgc = regionPsgc;
-        mapStore.provincePsgc = '';
       });
 
       layer.bindTooltip(regionName, {

@@ -12,6 +12,7 @@ const mapStore = useMapStore();
     <h1 class="text-3xl font-medium my-4 text-zinc-600">
       {{ mapStore.island }}
       <span v-if="mapStore.region"> > {{ mapStore.region }}</span>
+      <span v-if="mapStore.province"> > {{ mapStore.province }}</span>
     </h1>
   </div>
 </template>
