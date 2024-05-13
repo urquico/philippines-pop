@@ -8,4 +8,9 @@ export type MapStoreType = {
 
   province: string;
   provincePsgc: string;
+
+  cityMun: string;
+  cityMunPsgc: string;
+
+  bgy: string;
 };
