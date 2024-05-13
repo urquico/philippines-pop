@@ -9,6 +9,18 @@ export const geoStyle = {
   opacity: 0.65,
 };
 
+export const regionStyle = {
+  color: 'blue',
+  weight: 2,
+  opacity: 0.65,
+};
+
+export const provinceStyle = {
+  color: 'red',
+  weight: 2,
+  opacity: 0.65,
+};
+
 export const defaultZoom: number = 6;
 
 export const MAP_SKIN =
